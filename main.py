@@ -210,11 +210,11 @@ async def transfer_payload():
 
 @app.post("/api/update_parameters")
 async def update_parameters(
-    frequency1: float = None,
-    frequency2: float = None,
-    detune: float = None,
-    power1: float = None,
-    power2: float = None
+    frequency1: float | None = None,
+    frequency2: float | None = None,
+    detune: float | None = None,
+    power1: float | None = None,
+    power2: float | None = None
 ):
     """Update simulation parameters with validation"""
     dp = simulation_state["dual_portal"]
