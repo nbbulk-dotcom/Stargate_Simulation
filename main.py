@@ -455,6 +455,45 @@ async def lock_portal(portal: int = 1):
             logger.error(f"Error locking portal {portal}: {e}")
         return {"status": "error", "message": str(e)}
 
+@app.post("/api/apply_optimal_parameters")
+async def apply_optimal_parameters(
+    frequency1: float = 32.0,
+    frequency2: float = 32.0,
+    energy1: float = 10000.0,
+    energy2: float = 10000.0
+):
+    """Apply optimal parameters to both portals"""
+    dp = simulation_state["dual_portal"]
+    if not dp:
+        return {"status": "error", "message": "Dual portal not initialized"}
+    
+    try:
+        dp.portal1.freq = max(14.0, min(40.0, frequency1))
+        dp.portal2.freq = max(14.0, min(40.0, frequency2))
+        dp.portal1.energy = max(100.0, min(20000.0, energy1))
+        dp.portal2.energy = max(100.0, min(20000.0, energy2))
+        
+        dp.portal1.update_energy(dt=1.0)
+        dp.portal2.update_energy(dt=1.0)
+        dp.form_bridge(t=1.0)
+        
+        return {
+            "status": "success",
+            "message": "Optimal parameters applied successfully",
+            "applied_params": {
+                "frequency1": dp.portal1.freq,
+                "frequency2": dp.portal2.freq,
+                "energy1": dp.portal1.energy,
+                "energy2": dp.portal2.energy
+            },
+            "bridge_strength": dp.bridge_strength
+        }
+    except Exception as e:
+        logger = simulation_state.get("logger")
+        if logger:
+            logger.error(f"Error applying optimal parameters: {e}")
+        return {"status": "error", "message": str(e)}
+
 @app.post("/api/parameter_sweep")
 async def parameter_sweep(base_freq: float = 32.0, sweep_range: float = 2.0, steps: int = 10):
     """Run parameter sweep optimization for bridge strength"""
