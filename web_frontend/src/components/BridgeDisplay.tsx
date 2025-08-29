@@ -1,5 +1,6 @@
 import React from 'react'
 import MonitoringDashboard from './MonitoringDashboard'
+import OperationsControls from './OperationsControls'
 
 interface SimulationData {
   status: string;
@@ -282,6 +283,9 @@ const BridgeDisplay: React.FC<BridgeDisplayProps> = ({ simulationData }) => {
           </button>
         </div>
       </div>
+
+      {/* Operations Controls */}
+      <OperationsControls />
 
     </div>
   )

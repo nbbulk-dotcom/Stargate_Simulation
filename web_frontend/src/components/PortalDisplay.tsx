@@ -1,5 +1,7 @@
 import React from 'react'
 import Portal3D from './Portal3D'
+import EnergyControls from './EnergyControls'
+import PayloadControls from './PayloadControls'
 
 interface PortalData {
   freq?: number;
@@ -17,9 +19,10 @@ interface PortalData {
 interface PortalDisplayProps {
   portal?: PortalData;
   title: string;
+  portalNumber: number;
 }
 
-const PortalDisplay: React.FC<PortalDisplayProps> = ({ portal, title }) => {
+const PortalDisplay: React.FC<PortalDisplayProps> = ({ portal, title, portalNumber }) => {
   if (!portal) {
     return (
       <div className="text-center text-gray-400 py-8">
@@ -142,6 +145,10 @@ const PortalDisplay: React.FC<PortalDisplayProps> = ({ portal, title }) => {
           )}
         </div>
       </div>
+      
+      {/* Portal-specific controls */}
+      {portalNumber === 1 && <EnergyControls portalNumber={1} />}
+      {portalNumber === 2 && <PayloadControls />}
     </div>
   )
 }
