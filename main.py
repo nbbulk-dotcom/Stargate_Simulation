@@ -420,7 +420,10 @@ async def scan_portal(portal: int = 1):
     except Exception as e:
         logger = simulation_state.get("logger")
         if logger:
-            logger.error(f"Error scanning portal {portal}: {e}")
+            logger.log_event(f"Portal Scan Error", simulation_state["dual_portal"].run_id if simulation_state["dual_portal"] else "unknown", 
+                           simulation_state["dual_portal"].portal1 if simulation_state["dual_portal"] else None, 
+                           simulation_state["dual_portal"].portal2 if simulation_state["dual_portal"] else None, 
+                           0.0, None, f"Error scanning portal {portal}: {e}")
         return {"status": "error", "message": str(e)}
 
 @app.post("/api/lock_portal")
@@ -452,7 +455,10 @@ async def lock_portal(portal: int = 1):
     except Exception as e:
         logger = simulation_state.get("logger")
         if logger:
-            logger.error(f"Error locking portal {portal}: {e}")
+            logger.log_event(f"Portal Lock Error", simulation_state["dual_portal"].run_id if simulation_state["dual_portal"] else "unknown", 
+                           simulation_state["dual_portal"].portal1 if simulation_state["dual_portal"] else None, 
+                           simulation_state["dual_portal"].portal2 if simulation_state["dual_portal"] else None, 
+                           0.0, None, f"Error locking portal {portal}: {e}")
         return {"status": "error", "message": str(e)}
 
 @app.post("/api/load_payload")
@@ -479,7 +485,11 @@ async def load_payload(request: dict):
         
         logger = simulation_state.get("logger")
         if logger:
-            logger.info(f"Payload loaded into Portal {portal}: {payload_type} ({payload_mass}kg)")
+            logger.log_event(f"Payload Load", simulation_state["dual_portal"].run_id, 
+                           simulation_state["dual_portal"].portal1, 
+                           simulation_state["dual_portal"].portal2, 
+                           simulation_state["dual_portal"].bridge_strength, 
+                           None, f"Payload loaded into Portal {portal}: {payload_type} ({payload_mass}kg)")
         
         return {
             "status": "success",
@@ -494,7 +504,10 @@ async def load_payload(request: dict):
     except Exception as e:
         logger = simulation_state.get("logger")
         if logger:
-            logger.error(f"Error loading payload: {e}")
+            logger.log_event(f"Payload Load Error", simulation_state["dual_portal"].run_id if simulation_state["dual_portal"] else "unknown", 
+                           simulation_state["dual_portal"].portal1 if simulation_state["dual_portal"] else None, 
+                           simulation_state["dual_portal"].portal2 if simulation_state["dual_portal"] else None, 
+                           0.0, None, f"Error loading payload: {e}")
         return {"status": "error", "message": str(e)}
 
 @app.post("/api/apply_optimal_parameters")
@@ -533,7 +546,10 @@ async def apply_optimal_parameters(
     except Exception as e:
         logger = simulation_state.get("logger")
         if logger:
-            logger.error(f"Error applying optimal parameters: {e}")
+            logger.log_event(f"Apply Parameters Error", simulation_state["dual_portal"].run_id if simulation_state["dual_portal"] else "unknown", 
+                           simulation_state["dual_portal"].portal1 if simulation_state["dual_portal"] else None, 
+                           simulation_state["dual_portal"].portal2 if simulation_state["dual_portal"] else None, 
+                           0.0, None, f"Error applying optimal parameters: {e}")
         return {"status": "error", "message": str(e)}
 
 @app.post("/api/parameter_sweep")
