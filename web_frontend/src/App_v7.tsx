@@ -16,6 +16,7 @@ interface SimulationData {
 function App() {
   const [simulationData, setSimulationData] = useState<SimulationData>({ status: 'disconnected' })
   const [wsConnected, setWsConnected] = useState(false)
+  
   useEffect(() => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
     const wsProtocol = backendUrl.startsWith('https://') ? 'wss://' : 'ws://'
