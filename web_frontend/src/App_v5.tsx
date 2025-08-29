@@ -16,49 +16,41 @@ interface SimulationData {
 function App() {
   const [simulationData, setSimulationData] = useState<SimulationData>({ status: 'disconnected' })
   const [wsConnected, setWsConnected] = useState(false)
+
   useEffect(() => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
     const wsProtocol = backendUrl.startsWith('https://') ? 'wss://' : 'ws://'
     const wsUrl = backendUrl.replace(/^https?:\/\//, wsProtocol) + '/ws'
     
-    let ws: WebSocket
+    console.log('Connecting to WebSocket:', wsUrl)
+    const ws = new WebSocket(wsUrl)
     
-    const connect = () => {
-      console.log('Connecting to WebSocket:', wsUrl)
-      ws = new WebSocket(wsUrl)
-      
-      ws.onopen = () => {
-        setWsConnected(true)
-        console.log('WebSocket connected')
-      }
-      
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          setSimulationData(data)
-        } catch (error) {
-          console.error('Error parsing WebSocket data:', error)
-        }
-      }
-      
-      ws.onclose = () => {
-        setWsConnected(false)
-        console.log('WebSocket disconnected - reconnecting in 3000ms')
-        setTimeout(connect, 3000)
-      }
-      
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error)
-        setWsConnected(false)
+    ws.onopen = () => {
+      setWsConnected(true)
+      console.log('WebSocket connected')
+    }
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        setSimulationData(data)
+      } catch (error) {
+        console.error('Error parsing WebSocket data:', error)
       }
     }
     
-    connect()
+    ws.onclose = () => {
+      setWsConnected(false)
+      console.log('WebSocket disconnected')
+    }
+    
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error)
+      setWsConnected(false)
+    }
 
     return () => {
-      if (ws) {
-        ws.close()
-      }
+      ws.close()
     }
   }, [])
 
@@ -74,7 +66,6 @@ function App() {
       console.error('Error initializing simulation:', error)
     }
   }
-
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -94,7 +85,7 @@ function App() {
         </div>
       </div>
 
-      {/* Documentation Section - Moved to top */}
+      {/* Documentation Section */}
       <div className="bg-black border-b-2 border-white p-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-white text-xl font-bold mb-4 text-center">

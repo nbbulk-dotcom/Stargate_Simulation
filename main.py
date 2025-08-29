@@ -611,56 +611,60 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            dual_portal = simulation_state["dual_portal"]
-            if dual_portal:
-                dual_portal.portal1.update_energy(dt=1.0)
-                dual_portal.portal2.update_energy(dt=1.0)
+            try:
+                dual_portal = simulation_state.get("dual_portal")
+                if dual_portal:
+                    dual_portal.portal1.update_energy(dt=1.0)
+                    dual_portal.portal2.update_energy(dt=1.0)
+                    
+                    simulation_data = {
+                        "status": "running",
+                        "run_id": dual_portal.run_id,
+                        "portal1": {
+                            "freq": dual_portal.portal1.freq,
+                            "stability": dual_portal.portal1.stability,
+                            "power": dual_portal.portal1.power,
+                            "energy": dual_portal.portal1.energy,
+                            "floor_temp": dual_portal.portal1.floor_temp,
+                            "floor_contact": dual_portal.portal1.floor_contact,
+                            "safety_status": dual_portal.portal1.safety_status,
+                            "payload_volume": dual_portal.portal1.payload_volume,
+                            "payload_mass": dual_portal.portal1.payload_mass,
+                            "status_log": dual_portal.portal1.report_status()
+                        },
+                        "portal2": {
+                            "freq": dual_portal.portal2.freq,
+                            "stability": dual_portal.portal2.stability,
+                            "power": dual_portal.portal2.power,
+                            "energy": dual_portal.portal2.energy,
+                            "floor_temp": dual_portal.portal2.floor_temp,
+                            "floor_contact": dual_portal.portal2.floor_contact,
+                            "safety_status": dual_portal.portal2.safety_status,
+                            "payload_volume": dual_portal.portal2.payload_volume,
+                            "payload_mass": dual_portal.portal2.payload_mass,
+                            "status_log": dual_portal.portal2.report_status()
+                        },
+                        "bridge_strength": dual_portal.bridge_strength,
+                        "transfer_energy": dual_portal.transfer_energy,
+                        "detune": dual_portal.detune,
+                        "status_log": dual_portal.status_log
+                    }
+                    await websocket.send_text(json.dumps(simulation_data))
+                else:
+                    default_data = {
+                        "status": "disconnected",
+                        "portal1": None,
+                        "portal2": None,
+                        "bridge_strength": 0.0,
+                        "transfer_energy": 0.0,
+                        "detune": 0.0
+                    }
+                    await websocket.send_text(json.dumps(default_data))
                 
-                simulation_data = {
-                    "status": "running",
-                    "run_id": dual_portal.run_id,
-                    "portal1": {
-                        "freq": dual_portal.portal1.freq,
-                        "stability": dual_portal.portal1.stability,
-                        "power": dual_portal.portal1.power,
-                        "energy": dual_portal.portal1.energy,
-                        "floor_temp": dual_portal.portal1.floor_temp,
-                        "floor_contact": dual_portal.portal1.floor_contact,
-                        "safety_status": dual_portal.portal1.safety_status,
-                        "payload_volume": dual_portal.portal1.payload_volume,
-                        "payload_mass": dual_portal.portal1.payload_mass,
-                        "status_log": dual_portal.portal1.report_status()
-                    },
-                    "portal2": {
-                        "freq": dual_portal.portal2.freq,
-                        "stability": dual_portal.portal2.stability,
-                        "power": dual_portal.portal2.power,
-                        "energy": dual_portal.portal2.energy,
-                        "floor_temp": dual_portal.portal2.floor_temp,
-                        "floor_contact": dual_portal.portal2.floor_contact,
-                        "safety_status": dual_portal.portal2.safety_status,
-                        "payload_volume": dual_portal.portal2.payload_volume,
-                        "payload_mass": dual_portal.portal2.payload_mass,
-                        "status_log": dual_portal.portal2.report_status()
-                    },
-                    "bridge_strength": dual_portal.bridge_strength,
-                    "transfer_energy": dual_portal.transfer_energy,
-                    "detune": dual_portal.detune,
-                    "status_log": dual_portal.status_log
-                }
-                await websocket.send_text(json.dumps(simulation_data))
-            else:
-                default_data = {
-                    "status": "disconnected",
-                    "portal1": None,
-                    "portal2": None,
-                    "bridge_strength": 0.0,
-                    "transfer_energy": 0.0,
-                    "detune": 0.0
-                }
-                await websocket.send_text(json.dumps(default_data))
-            
-            await asyncio.sleep(1.0)
+                await asyncio.sleep(1.0)
+            except Exception as e:
+                print(f"WebSocket loop error: {e}")
+                await asyncio.sleep(1.0)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
