@@ -176,6 +176,8 @@ async def form_bridge(t: float = 1.0):
         return {"status": "error", "message": "Simulation not initialized"}
     
     try:
+        dp.portal1.update_energy(dt=t)
+        dp.portal2.update_energy(dt=t)
         dp.form_bridge(t=t)
         return {
             "status": "success",
@@ -389,7 +391,7 @@ async def clear_logs():
         return {"status": "error", "message": str(e)}
 
 @app.post("/api/parameter_sweep")
-async def parameter_sweep(base_energy: float = 1000, sweep_range: float = 1000, steps: int = 10):
+async def parameter_sweep(base_freq: float = 32.0, sweep_range: float = 2.0, steps: int = 10):
     """Run parameter sweep optimization for bridge strength"""
     dp = simulation_state["dual_portal"]
     if not dp:
@@ -397,41 +399,43 @@ async def parameter_sweep(base_energy: float = 1000, sweep_range: float = 1000, 
     
     try:
         results = []
-        energy_step = (2 * sweep_range) / steps
+        freq_step = (2 * sweep_range) / steps
         
         for i in range(steps):
-            energy1 = base_energy - sweep_range + (i * energy_step)
-            energy2 = base_energy - sweep_range + (i * energy_step)
+            freq1 = base_freq - sweep_range + (i * freq_step)
+            freq2 = base_freq - sweep_range + (i * freq_step)
             
-            energy1 = max(100, min(20000, energy1))
-            energy2 = max(100, min(20000, energy2))
+            freq1 = max(30.0, min(35.0, freq1))
+            freq2 = max(30.0, min(35.0, freq2))
             
-            original_energy1 = dp.portal1.energy
-            original_energy2 = dp.portal2.energy
+            original_freq1 = dp.portal1.freq
+            original_freq2 = dp.portal2.freq
             
-            dp.portal1.energy = energy1
-            dp.portal2.energy = energy2
+            dp.portal1.freq = freq1
+            dp.portal2.freq = freq2
             
+            dp.portal1.update_energy(dt=1.0)
+            dp.portal2.update_energy(dt=1.0)
             dp.form_bridge(t=1.0)
             bridge_strength = dp.bridge_strength
             
             results.append({
-                "energy1": energy1,
-                "energy2": energy2,
+                "freq1": freq1,
+                "freq2": freq2,
                 "bridge_strength": bridge_strength,
                 "detune": dp.detune,
                 "step": i
             })
             
-            dp.portal1.energy = original_energy1
-            dp.portal2.energy = original_energy2
+            dp.portal1.freq = original_freq1
+            dp.portal2.freq = original_freq2
         
         return {
             "status": "success",
             "results": results,
             "best_result": max(results, key=lambda x: x["bridge_strength"]),
             "sweep_parameters": {
-                "base_energy": base_energy,
+                "base_freq": base_freq,
                 "sweep_range": sweep_range,
                 "steps": steps
             }
@@ -447,6 +451,9 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             dual_portal = simulation_state["dual_portal"]
             if dual_portal:
+                dual_portal.portal1.update_energy(dt=1.0)
+                dual_portal.portal2.update_energy(dt=1.0)
+                
                 simulation_data = {
                     "status": "running",
                     "run_id": dual_portal.run_id,
