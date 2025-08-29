@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import PortalDisplay from './components/PortalDisplay'
 import BridgeDisplay from './components/BridgeDisplay'
-import ParameterControls from './components/ParameterControls'
 
 interface SimulationData {
   status: string;
@@ -192,8 +191,8 @@ function App() {
         </div>
       </div>
 
-      {/* 4-Screen Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 min-h-[calc(100vh-300px)]">
+      {/* 3-Screen Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 min-h-[calc(100vh-300px)]">
         {/* Monitor 1: Stargate 1 */}
         <div className="bg-gray-800 rounded-lg border border-gray-700">
           <div className="bg-gray-700 p-3 rounded-t-lg">
@@ -203,6 +202,7 @@ function App() {
             <PortalDisplay 
               portal={simulationData.portal1} 
               title="Stargate 1 Panel"
+              portalNumber={1}
             />
           </div>
         </div>
@@ -216,6 +216,7 @@ function App() {
             <PortalDisplay 
               portal={simulationData.portal2} 
               title="Stargate 2 Panel"
+              portalNumber={2}
             />
           </div>
         </div>
@@ -232,19 +233,6 @@ function App() {
           </div>
         </div>
 
-        {/* Monitor 4: Parameter Controls */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700">
-          <div className="bg-gray-700 p-3 rounded-t-lg">
-            <h2 className="text-lg font-semibold text-center text-white">Monitor 4: Parameter Controls</h2>
-          </div>
-          <div className="p-4">
-            <ParameterControls 
-              onParameterUpdate={(params) => {
-                console.log('Parameter update:', params)
-              }}
-            />
-          </div>
-        </div>
       </div>
     </div>
   )
