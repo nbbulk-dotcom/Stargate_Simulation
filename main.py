@@ -390,6 +390,71 @@ async def clear_logs():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+@app.post("/api/scan_portal")
+async def scan_portal(portal: int = 1):
+    """Scan portal contents and return required parameters"""
+    try:
+        dual_portal = simulation_state["dual_portal"]
+        if not dual_portal:
+            return {"status": "error", "message": "Dual portal not initialized"}
+        
+        portal_obj = dual_portal.portal1 if portal == 1 else dual_portal.portal2
+        
+        scan_result = {
+            "status": "success",
+            "portal": portal,
+            "contents": f"Portal {portal} ready for transport",
+            "required_params": {
+                "frequency": f"{portal_obj.freq:.2f} Hz",
+                "energy": f"{portal_obj.energy:.1f} J",
+                "stability": f"{portal_obj.stability:.2f}"
+            },
+            "recommendations": {
+                "optimal_frequency": "30.0 Hz",
+                "optimal_energy": "10000 J",
+                "payload_compatibility": "All material types supported"
+            }
+        }
+        
+        return scan_result
+    except Exception as e:
+        logger = simulation_state.get("logger")
+        if logger:
+            logger.error(f"Error scanning portal {portal}: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/lock_portal")
+async def lock_portal(portal: int = 1):
+    """Lock portal for transport"""
+    try:
+        dual_portal = simulation_state["dual_portal"]
+        if not dual_portal:
+            return {"status": "error", "message": "Dual portal not initialized"}
+        
+        portal_obj = dual_portal.portal1 if portal == 1 else dual_portal.portal2
+        
+        if portal_obj.safety_status and portal_obj.stability > 0.3:
+            return {
+                "status": "success",
+                "portal": portal,
+                "locked": True,
+                "message": f"Portal {portal} locked and ready for transport",
+                "transport_ready": True
+            }
+        else:
+            return {
+                "status": "error",
+                "portal": portal,
+                "locked": False,
+                "message": f"Portal {portal} not stable enough for transport lock",
+                "transport_ready": False
+            }
+    except Exception as e:
+        logger = simulation_state.get("logger")
+        if logger:
+            logger.error(f"Error locking portal {portal}: {e}")
+        return {"status": "error", "message": str(e)}
+
 @app.post("/api/parameter_sweep")
 async def parameter_sweep(base_freq: float = 32.0, sweep_range: float = 2.0, steps: int = 10):
     """Run parameter sweep optimization for bridge strength"""
