@@ -455,6 +455,48 @@ async def lock_portal(portal: int = 1):
             logger.error(f"Error locking portal {portal}: {e}")
         return {"status": "error", "message": str(e)}
 
+@app.post("/api/load_payload")
+async def load_payload(request: dict):
+    """Load payload into specified portal"""
+    try:
+        portal = request.get("portal", 1)
+        payload_type = request.get("payload_type", "Gold")
+        payload_volume = request.get("payload_volume", 0.1)
+        payload_mass = request.get("payload_mass", 75.0)
+        
+        dual_portal = simulation_state["dual_portal"]
+        if not dual_portal:
+            return {"status": "error", "message": "Dual portal not initialized"}
+        
+        portal_obj = dual_portal.portal1 if portal == 1 else dual_portal.portal2
+        
+        portal_obj.payload = {
+            "type": payload_type,
+            "volume": payload_volume,
+            "mass": payload_mass,
+            "loaded": True
+        }
+        
+        logger = simulation_state.get("logger")
+        if logger:
+            logger.info(f"Payload loaded into Portal {portal}: {payload_type} ({payload_mass}kg)")
+        
+        return {
+            "status": "success",
+            "portal": portal,
+            "message": f"Payload successfully loaded into Portal {portal}",
+            "payload": {
+                "type": payload_type,
+                "volume": payload_volume,
+                "mass": payload_mass
+            }
+        }
+    except Exception as e:
+        logger = simulation_state.get("logger")
+        if logger:
+            logger.error(f"Error loading payload: {e}")
+        return {"status": "error", "message": str(e)}
+
 @app.post("/api/apply_optimal_parameters")
 async def apply_optimal_parameters(
     frequency1: float = 32.0,
