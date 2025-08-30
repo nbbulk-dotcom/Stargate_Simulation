@@ -10,7 +10,7 @@ A comprehensive real-time simulation system for dual portal stargate operations,
 
 ## 🚀 Live Demo
 
-**🌐 [Access the Live Stargate Simulation System](https://deployment-url-will-be-updated)**
+**🌐 [Access the Live Stargate Simulation System](https://stargate-scripts-assembler-4dba9wmt.devinapps.com/)**
 
 *Experience the full 3-screen monitoring interface with real-time physics calculations and WebSocket connectivity.*
 
