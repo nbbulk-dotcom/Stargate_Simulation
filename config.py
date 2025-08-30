@@ -11,7 +11,7 @@ import numpy as np                  # Core numerical operations
 from scipy.integrate import odeint  # Scientific ODE solver, for resonance dynamics
 import matplotlib.pyplot as plt     # Full-featured plotting/display library
 
-RES_FREQ = 32.0            # Hz (Bio-safe resonance frequency, main portal drive band)
+RES_FREQ = 7.83            # Hz (Schumann Resonance fundamental - empirical Earth electromagnetic cavity)
 ENERGY_RATE = 13500.0      # Watts (Tesla Powerwall peak, main supply per portal)
 V_HUMAN = 0.1              # m³ (Default human subject volume, overrideable per run)
 FLOOR_TEMP_THRESH = -195.8 # °C (Liquid nitrogen phase threshold, critical for safety)
@@ -64,8 +64,8 @@ def validate_config(cfg):
     """
     Checks all critical parameters, prints warning and raises error if critical bounds are violated.
     """
-    if cfg["resonance_frequency"] < 1 or cfg["resonance_frequency"] > 100:
-        raise ValueError("Resonance frequency must be within 1–100 Hz (bio-safe/engineering bounds).")
+    if cfg["resonance_frequency"] < 7.0 or cfg["resonance_frequency"] > 8.5:
+        raise ValueError("Resonance frequency must be within Schumann Resonance range: 7.0-8.5 Hz (empirical bounds).")
     if not (0 < cfg["subject_volume"] < 10):
         raise ValueError("Subject volume unreasonably outside bounds: 0 < volume (m³) < 10.")
     if cfg["floor_temp_threshold"] > -100:
