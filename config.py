@@ -22,8 +22,8 @@ FAILSAFE_BLOCKS = 2               # Number of independent physical failsafe back
 
 DETUNE_DEFAULT = 0.08             # Hz, recommended initial detuning for bridge regime
 
-DAMPING_MIN = 0.02                # Minimum physical damping to avoid ringing
-DAMPING_MAX = 0.12                # Maximum damping before coherence drops
+DAMPING_MIN = 5e-12               # Empirical superconducting resonator damping (Q~10^11)
+DAMPING_MAX = 5e-10               # Empirical superconducting resonator damping (Q~10^9)
 
 MONITOR_COUNT = 3                 # System runs on 3 physical/logical monitors
 
