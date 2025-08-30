@@ -12,7 +12,7 @@ from scipy.integrate import odeint  # Scientific ODE solver, for resonance dynam
 import matplotlib.pyplot as plt     # Full-featured plotting/display library
 
 RES_FREQ = 7.83            # Hz (Schumann Resonance fundamental - empirical Earth electromagnetic cavity)
-ENERGY_RATE = 13500.0      # Watts (Tesla Powerwall peak, main supply per portal)
+ENERGY_RATE = 5000.0       # Watts (Tesla Powerwall 2 continuous rated power - empirical specification)
 V_HUMAN = 0.1              # m³ (Default human subject volume, overrideable per run)
 FLOOR_TEMP_THRESH = -195.8 # °C (Liquid nitrogen phase threshold, critical for safety)
 FLOOR_SOLID_CONTACT = True # Boolean default; True if physical floor sensor reads contact
