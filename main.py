@@ -85,7 +85,15 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"message": "Stargate Simulation API", "status": "operational", "version": "uvicorn-fixed", "debug": "code-updated"}
+    import datetime
+    return {
+        "message": "Stargate Simulation API", 
+        "status": "operational", 
+        "version": "WebSocket-fixes-v2.0.0",
+        "debug": "backend running new main.py with 120s timeouts",
+        "timestamp": str(datetime.datetime.utcnow()),
+        "backend_info": "Clean deployment - bypassing buildpack override"
+    }
 
 @app.get("/api/status")
 async def get_status():
@@ -697,6 +705,8 @@ async def websocket_logs_endpoint(websocket: WebSocket):
             await asyncio.sleep(1.0)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+
+print("DEBUG: main.py loaded!", flush=True)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080)
