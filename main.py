@@ -607,11 +607,17 @@ async def parameter_sweep(base_freq: float = 32.0, sweep_range: float = 2.0, ste
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """Main WebSocket endpoint for real-time simulation data streaming"""
+    """Main WebSocket endpoint for real-time simulation data streaming with heartbeat"""
     await manager.connect(websocket)
+    last_ping = asyncio.get_event_loop().time()
     try:
         while True:
             try:
+                current_time = asyncio.get_event_loop().time()
+                if current_time - last_ping > 60:
+                    await websocket.ping()
+                    last_ping = current_time
+                
                 dual_portal = simulation_state.get("dual_portal")
                 if dual_portal:
                     dual_portal.portal1.update_energy(dt=1.0)
@@ -647,7 +653,8 @@ async def websocket_endpoint(websocket: WebSocket):
                         "bridge_strength": dual_portal.bridge_strength,
                         "transfer_energy": dual_portal.transfer_energy,
                         "detune": dual_portal.detune,
-                        "status_log": dual_portal.status_log
+                        "status_log": dual_portal.status_log,
+                        "timestamp": current_time
                     }
                     await websocket.send_text(json.dumps(simulation_data))
                 else:
@@ -657,15 +664,20 @@ async def websocket_endpoint(websocket: WebSocket):
                         "portal2": None,
                         "bridge_strength": 0.0,
                         "transfer_energy": 0.0,
-                        "detune": 0.0
+                        "detune": 0.0,
+                        "timestamp": current_time
                     }
                     await websocket.send_text(json.dumps(default_data))
                 
-                await asyncio.sleep(1.0)
+                await asyncio.sleep(2.0)
             except Exception as e:
-                print(f"WebSocket loop error: {e}")
-                await asyncio.sleep(1.0)
+                print(f"WebSocket loop error: {e}", flush=True)
+                await asyncio.sleep(2.0)
     except WebSocketDisconnect:
+        print("WebSocket disconnected normally", flush=True)
+        manager.disconnect(websocket)
+    except Exception as e:
+        print(f"WebSocket connection error: {e}", flush=True)
         manager.disconnect(websocket)
 
 @app.websocket("/ws/logs")
@@ -687,4 +699,4 @@ async def websocket_logs_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)

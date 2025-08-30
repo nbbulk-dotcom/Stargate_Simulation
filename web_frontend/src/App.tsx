@@ -22,14 +22,25 @@ function App() {
     const wsUrl = backendUrl.replace(/^https?:\/\//, wsProtocol) + '/ws'
     
     let ws: WebSocket
+    let reconnectAttempts = 0
+    const maxReconnectAttempts = 10
     
     const connect = () => {
       console.log('Connecting to WebSocket:', wsUrl)
       ws = new WebSocket(wsUrl)
       
+      const connectionTimeout = setTimeout(() => {
+        if (ws.readyState === WebSocket.CONNECTING) {
+          console.log('WebSocket connection timeout after 120s')
+          ws.close()
+        }
+      }, 120000)
+      
       ws.onopen = () => {
+        clearTimeout(connectionTimeout)
         setWsConnected(true)
-        console.log('WebSocket connected')
+        reconnectAttempts = 0
+        console.log('WebSocket connected successfully')
       }
       
       ws.onmessage = (event) => {
@@ -42,10 +53,19 @@ function App() {
       }
       
       ws.onclose = (event) => {
+        clearTimeout(connectionTimeout)
         setWsConnected(false)
-        console.log('WebSocket disconnected - reconnecting in 3000ms')
-        console.log('WebSocket readyState:', ws.readyState, 'Close code:', event.code, 'Close reason:', event.reason)
-        setTimeout(connect, 3000)
+        console.log('WebSocket disconnected - Code:', event.code, 'Reason:', event.reason)
+        console.log('WebSocket readyState:', ws.readyState)
+        
+        if (reconnectAttempts < maxReconnectAttempts) {
+          const delay = Math.min(5000 * Math.pow(2, reconnectAttempts), 30000) // Exponential backoff, max 30s
+          console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`)
+          reconnectAttempts++
+          setTimeout(connect, delay)
+        } else {
+          console.error('Max reconnection attempts reached')
+        }
       }
       
       ws.onerror = (error) => {
